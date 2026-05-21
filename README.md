@@ -71,6 +71,10 @@ This is a GitHub Pages–ready project. The only required file is `index.html` i
 
 No build step. No configuration.
 
+## Contributing
+
+Ideas and PRs welcome — open an issue to discuss before making changes.
+
 ## License
 
 MIT
