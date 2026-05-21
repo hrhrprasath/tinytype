@@ -1,4 +1,4 @@
-# tinytype
+# [tinytype](https://hrhrprasath.github.io/tinytype) 
 
 > A gentle typing game for toddlers — press keys, watch letters appear. No ads, no flash.
 
@@ -77,4 +77,4 @@ MIT
 
 ---
 
-Powered by [OpenCode](https://opencode.ai) — free sponsor token.
+Powered by [OpenCode](https://opencode.ai)

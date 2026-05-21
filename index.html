@@ -7,7 +7,10 @@
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <title>tinytype</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23fff' font-family='-apple-system,sans-serif' font-weight='300'>Aa</text></svg>">
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23fff' font-family='-apple-system,sans-serif' font-weight='300'>Aa</text></svg>"
+        />
         <style>
             * {
                 margin: 0;
@@ -244,9 +247,9 @@
         <div id="app">
             <canvas id="stars"></canvas>
             <div id="case-opt">
-<button data-mode="upper" class="active">A</button>
-<button data-mode="lower">a</button>
-<button data-mode="asis">Aa</button>
+                <button data-mode="upper" class="active">A</button>
+                <button data-mode="lower">a</button>
+                <button data-mode="asis">Aa</button>
             </div>
             <div id="scroll-area"><div id="content"></div></div>
             <div id="msg">
@@ -397,6 +400,7 @@
 
                 function spawn(ch) {
                     if (!active) return;
+                    if (!timerId) timerId = setInterval(tick, 1000);
                     ch = applyCase(ch);
                     playTone(freqFromChar(ch.toUpperCase()));
                     msg.classList.add("hide");
@@ -450,6 +454,7 @@
 
                 function handleEnter() {
                     if (!active) return;
+                    if (!timerId) timerId = setInterval(tick, 1000);
                     playTone(220);
                     msg.classList.add("hide");
                     currentLine++;
@@ -505,7 +510,6 @@
                 }
 
                 timerBar.style.width = "100%";
-                timerId = setInterval(tick, 1000);
 
                 function goFull() {
                     var d = document.documentElement;
@@ -569,7 +573,6 @@
                             clearInterval(timerId);
                             timerId = null;
                         }
-                        timerId = setInterval(tick, 1000);
                         msg.classList.remove("hide");
                         var els = content.querySelectorAll(".letter,.line-num");
                         for (var i = els.length; i--; ) els[i].remove();
