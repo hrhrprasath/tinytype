@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>tinytype</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23fff' font-family='-apple-system,sans-serif' font-weight='300'>Aa</text></svg>">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background: #050508;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    sans-serif;
+                cursor: default;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-touch-callout: none;
+                touch-action: none;
+            }
+
+            #app {
+                position: fixed;
+                inset: 0;
+                background: radial-gradient(
+                    ellipse at center,
+                    #0c0c18 0%,
+                    #050508 100%
+                );
+            }
+            #stars {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                opacity: 0.2;
+            }
+
+            #scroll-area {
+                position: fixed;
+                top: 48px;
+                left: 0;
+                right: 0;
+                bottom: 28px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+                z-index: 1;
+            }
+            #scroll-area::-webkit-scrollbar {
+                width: 0;
+            }
+            #content {
+                position: relative;
+                min-height: 100%;
+            }
+
+            .letter {
+                position: absolute;
+                pointer-events: none;
+                font-weight: 300;
+                will-change: transform, left, top, font-size, opacity;
+                z-index: 1;
+            }
+
+            .line-num {
+                position: absolute;
+                pointer-events: none;
+                color: #fff;
+                font-weight: 300;
+                font-variant-numeric: tabular-nums;
+                text-align: right;
+                transform: translateY(-50%);
+                z-index: 0;
+                font-size: clamp(1rem, 2.5vw, 1.8rem);
+            }
+
+            #case-opt {
+                position: fixed;
+                top: 10px;
+                right: 14px;
+                z-index: 15;
+                display: flex;
+                gap: 3px;
+            }
+            #case-opt button {
+                background: transparent;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 0.7rem;
+                padding: 3px 9px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-family: inherit;
+                font-weight: 400;
+                transition: all 0.3s ease;
+                letter-spacing: 0.5px;
+            }
+            #case-opt button.active {
+                color: #fff;
+                border-color: rgba(255, 255, 255, 0.4);
+            }
+            #case-opt button:hover {
+                border-color: rgba(255, 255, 255, 0.3);
+                color: #fff;
+            }
+
+            #timer-wrap {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: transparent;
+            }
+            #timer-bar {
+                height: 100%;
+                width: 100%;
+                background: #fff;
+                transition: width 1s linear;
+            }
+
+            #stats {
+                position: fixed;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: rgba(180, 175, 165, 0.12);
+                font-size: 0.6rem;
+                font-weight: 400;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                font-variant-numeric: tabular-nums;
+                pointer-events: none;
+                white-space: nowrap;
+                z-index: 10;
+            }
+
+            #msg {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                pointer-events: none;
+                transition: opacity 1.5s ease;
+                opacity: 1;
+                z-index: 5;
+            }
+            #msg.hide {
+                opacity: 0;
+            }
+            #msg .icon {
+                font-size: 2.2rem;
+                display: block;
+                margin-bottom: 10px;
+                opacity: 0.35;
+                animation: gentlePulse 4s ease-in-out infinite;
+            }
+            #msg .txt {
+                color: rgba(180, 175, 165, 0.2);
+                font-size: 0.85rem;
+                font-weight: 300;
+                letter-spacing: 2px;
+            }
+            @keyframes gentlePulse {
+                0%,
+                100% {
+                    opacity: 0.3;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0.55;
+                    transform: scale(1.04);
+                }
+            }
+
+            #over {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 2s ease;
+                z-index: 20;
+            }
+            #over.show {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            #over h2 {
+                color: #fff;
+                font-size: 1.6rem;
+                font-weight: 300;
+                letter-spacing: 3px;
+                margin-bottom: 6px;
+            }
+            #over .sub {
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 0.85rem;
+                font-weight: 300;
+                line-height: 1.8;
+            }
+            #over .sub span {
+                color: #fff;
+            }
+            #restart {
+                margin-top: 22px;
+                padding: 10px 32px;
+                background: transparent;
+                border: 1px solid rgba(180, 175, 165, 0.12);
+                color: rgba(180, 175, 165, 0.3);
+                font-size: 0.8rem;
+                border-radius: 20px;
+                cursor: pointer;
+                transition: all 0.5s ease;
+                letter-spacing: 2px;
+                font-family: inherit;
+                font-weight: 300;
+            }
+            #restart:hover {
+                background: rgba(180, 175, 165, 0.05);
+                border-color: rgba(180, 175, 165, 0.3);
+                color: rgba(180, 175, 165, 0.55);
+            }
+            #restart:focus-visible {
+                outline: 1px solid rgba(180, 175, 165, 0.3);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <canvas id="stars"></canvas>
+            <div id="case-opt">
+<button data-mode="upper" class="active">A</button>
+<button data-mode="lower">a</button>
+<button data-mode="asis">Aa</button>
+            </div>
+            <div id="scroll-area"><div id="content"></div></div>
+            <div id="msg">
+                <span class="icon">&#10024;</span>
+                <span class="txt">press any letter to begin</span>
+            </div>
+            <div id="over">
+                <h2>time's up</h2>
+                <p class="sub">
+                    you pressed <span id="count-display">0</span> letters
+                </p>
+                <button id="restart">play again</button>
+            </div>
+            <div id="timer-wrap"><div id="timer-bar"></div></div>
+            <div id="stats">0 &middot; 3:00</div>
+        </div>
+        <script>
+            (function () {
+                var COLORS = [
+                    "#b8a088",
+                    "#88a898",
+                    "#a890a8",
+                    "#98a888",
+                    "#b89888",
+                    "#88a0a8",
+                    "#a89898",
+                    "#a8a088",
+                    "#98a8a0",
+                    "#b0a090",
+                ];
+                var DURATION = 180;
+                var q = location.search.match(/[?&]time=(\d+)([sm]?)/i) || [];
+                if (q[1]) DURATION = q[2] === "m" ? +q[1] * 60 : +q[1];
+                var POP_DURATION = 500,
+                    FLY_DELAY = 600;
+                var active = true,
+                    totalLetters = 0,
+                    timeLeft = DURATION,
+                    timerId = null;
+                var typed = [],
+                    currentLine = 0,
+                    caseMode = "upper";
+                var app = document.getElementById("app");
+                var content = document.getElementById("content");
+                var scrollArea = document.getElementById("scroll-area");
+                var msg = document.getElementById("msg");
+                var over = document.getElementById("over");
+                var timerBar = document.getElementById("timer-bar");
+                var stats = document.getElementById("stats");
+                var countDisplay = document.getElementById("count-display");
+
+                var W = window.innerWidth,
+                    H = window.innerHeight;
+                var stars = document.getElementById("stars"),
+                    ctx = stars.getContext("2d");
+                stars.width = W;
+                stars.height = H;
+                for (var i = 120; i--; ) {
+                    var x = Math.random() * W,
+                        y = Math.random() * H,
+                        r = Math.random() * 1.4 + 0.4;
+                    ctx.fillStyle =
+                        "rgba(200,200,220," +
+                        (Math.random() * 0.15 + 0.04) +
+                        ")";
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                function pickColor() {
+                    return COLORS[Math.floor(Math.random() * COLORS.length)];
+                }
+
+                var actx;
+                function playTone(f) {
+                    if (!actx)
+                        actx = new (
+                            window.AudioContext || window.webkitAudioContext
+                        )();
+                    var o = actx.createOscillator(),
+                        g = actx.createGain();
+                    o.type = "sine";
+                    o.frequency.value = f;
+                    g.gain.setValueAtTime(0.08, actx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(
+                        0.001,
+                        actx.currentTime + 0.12,
+                    );
+                    o.connect(g);
+                    g.connect(actx.destination);
+                    o.start();
+                    o.stop(actx.currentTime + 0.12);
+                }
+
+                function slotPos(line, col) {
+                    var sp = Math.min(
+                        68,
+                        Math.max(40, (window.innerWidth - 170) / 20),
+                    );
+                    return { x: 90 + col * sp + sp / 2, y: 80 + line * 72 };
+                }
+
+                function colInLine(line) {
+                    var c = 0;
+                    for (var i = typed.length; i--; )
+                        if (typed[i].line === line) c++;
+                    return c;
+                }
+
+                function maxPerLine() {
+                    var sp = Math.min(
+                        68,
+                        Math.max(40, (window.innerWidth - 170) / 20),
+                    );
+                    return Math.max(
+                        1,
+                        Math.floor((window.innerWidth - 130) / sp),
+                    );
+                }
+
+                function updateLineNumbers() {
+                    var els = content.querySelectorAll(".line-num");
+                    for (var i = els.length; i--; ) els[i].remove();
+                    for (var i = 0; i <= currentLine; i++) {
+                        var el = document.createElement("span");
+                        el.className = "line-num";
+                        el.textContent = i + 1 + ":";
+                        el.style.left = "16px";
+                        el.style.top = 80 + i * 72 + "px";
+                        content.appendChild(el);
+                    }
+                }
+
+                function freqFromChar(c) {
+                    if (c >= "A" && c <= "Z")
+                        return 262 + (c.charCodeAt(0) - 65) * 10;
+                    if (c >= "0" && c <= "9")
+                        return 330 + (c.charCodeAt(0) - 48) * 15;
+                    return 440;
+                }
+
+                function applyCase(c) {
+                    if (caseMode === "upper") return c.toUpperCase();
+                    if (caseMode === "lower") return c.toLowerCase();
+                    return c;
+                }
+
+                function spawn(ch) {
+                    if (!active) return;
+                    ch = applyCase(ch);
+                    playTone(freqFromChar(ch.toUpperCase()));
+                    msg.classList.add("hide");
+                    var col = colInLine(currentLine);
+                    if (col >= maxPerLine()) {
+                        currentLine++;
+                        updateLineNumbers();
+                        col = 0;
+                    }
+                    var line = currentLine;
+                    var pos = slotPos(line, col);
+                    var sa = scrollArea;
+                    var cx = sa.clientWidth / 2,
+                        cy = sa.scrollTop + sa.clientHeight / 2;
+                    var c = pickColor();
+                    var bigSize = "clamp(4rem,18vw,10rem)",
+                        smallSize = "clamp(1.8rem,3.8vw,3.2rem)";
+                    var el = document.createElement("div");
+                    el.className = "letter";
+                    el.textContent = ch;
+                    el.style.cssText =
+                        "left:" +
+                        cx +
+                        "px;top:" +
+                        cy +
+                        "px;color:" +
+                        c +
+                        ";font-size:" +
+                        bigSize +
+                        ";transform:translate(-50%,-50%) scale(.2);opacity:0;transition:none";
+                    content.appendChild(el);
+                    void el.offsetTop;
+                    el.style.transition =
+                        "transform " +
+                        POP_DURATION +
+                        "ms cubic-bezier(.34,1.56,.64,1),opacity 300ms ease";
+                    el.style.transform = "translate(-50%,-50%) scale(1)";
+                    el.style.opacity = "1";
+                    typed.push({ char: ch, line: line, el: el });
+                    totalLetters++;
+                    sa.scrollTop = sa.scrollHeight;
+                    setTimeout(function () {
+                        if (!el.parentNode) return;
+                        el.style.transition =
+                            "all 1.3s cubic-bezier(.25,.46,.45,.94)";
+                        el.style.left = pos.x + "px";
+                        el.style.top = pos.y + "px";
+                        el.style.fontSize = smallSize;
+                    }, FLY_DELAY);
+                }
+
+                function handleEnter() {
+                    if (!active) return;
+                    playTone(220);
+                    msg.classList.add("hide");
+                    currentLine++;
+                    updateLineNumbers();
+                    scrollArea.scrollTop = scrollArea.scrollHeight;
+                }
+
+                function handleBackspace() {
+                    if (!active) return;
+                    playTone(180);
+                    if (typed.length > 0) {
+                        var last = typed.pop();
+                        if (last.el && last.el.parentNode) last.el.remove();
+                        totalLetters--;
+                        if (typed.length > 0)
+                            currentLine = typed[typed.length - 1].line;
+                        else currentLine = 0;
+                        updateLineNumbers();
+                        updateStats();
+                    } else if (currentLine > 0) {
+                        currentLine--;
+                        updateLineNumbers();
+                    }
+                }
+
+                function updateStats() {
+                    var m = Math.floor(timeLeft / 60),
+                        s = timeLeft % 60;
+                    stats.textContent =
+                        totalLetters +
+                        " \u00b7 " +
+                        m +
+                        ":" +
+                        (s < 10 ? "0" : "") +
+                        s;
+                }
+
+                function tick() {
+                    timeLeft--;
+                    updateStats();
+                    timerBar.style.width = (timeLeft / DURATION) * 100 + "%";
+                    if (timeLeft <= 0) {
+                        active = false;
+                        if (timerId) {
+                            clearInterval(timerId);
+                            timerId = null;
+                        }
+                        over.classList.add("show");
+                        msg.classList.add("hide");
+                        countDisplay.textContent = totalLetters;
+                        stats.style.opacity = ".3";
+                    }
+                }
+
+                timerBar.style.width = "100%";
+                timerId = setInterval(tick, 1000);
+
+                function goFull() {
+                    var d = document.documentElement;
+                    if (d.requestFullscreen) d.requestFullscreen();
+                    else if (d.webkitRequestFullscreen)
+                        d.webkitRequestFullscreen();
+                }
+                app.addEventListener("click", goFull);
+
+                document
+                    .querySelectorAll("#case-opt button")
+                    .forEach(function (btn) {
+                        btn.addEventListener("click", function () {
+                            document
+                                .querySelectorAll("#case-opt button")
+                                .forEach(function (b) {
+                                    b.classList.remove("active");
+                                });
+                            btn.classList.add("active");
+                            caseMode = btn.getAttribute("data-mode");
+                        });
+                    });
+
+                document.addEventListener("keydown", function (e) {
+                    if (e.key !== "Escape") e.preventDefault();
+                    if (!active || e.repeat) return;
+                    var k = e.key;
+                    if (k === "Enter") {
+                        goFull();
+                        handleEnter();
+                        return;
+                    }
+                    if (k === "Backspace") {
+                        goFull();
+                        handleBackspace();
+                        return;
+                    }
+                    if (
+                        k.length === 1 &&
+                        ((k >= "a" && k <= "z") ||
+                            (k >= "A" && k <= "Z") ||
+                            (k >= "0" && k <= "9"))
+                    ) {
+                        goFull();
+                        spawn(k);
+                    }
+                });
+
+                document
+                    .getElementById("restart")
+                    .addEventListener("click", function () {
+                        active = true;
+                        totalLetters = 0;
+                        timeLeft = DURATION;
+                        typed = [];
+                        currentLine = 0;
+                        over.classList.remove("show");
+                        stats.style.opacity = "1";
+                        timerBar.style.width = "100%";
+                        if (timerId) {
+                            clearInterval(timerId);
+                            timerId = null;
+                        }
+                        timerId = setInterval(tick, 1000);
+                        msg.classList.remove("hide");
+                        var els = content.querySelectorAll(".letter,.line-num");
+                        for (var i = els.length; i--; ) els[i].remove();
+                        updateStats();
+                    });
+
+                window.addEventListener("resize", function () {
+                    var w = window.innerWidth,
+                        h = window.innerHeight;
+                    stars.width = w;
+                    stars.height = h;
+                    ctx.clearRect(0, 0, w, h);
+                    for (var i = 120; i--; ) {
+                        var x = Math.random() * w,
+                            y = Math.random() * h,
+                            r = Math.random() * 1.4 + 0.4;
+                        ctx.fillStyle =
+                            "rgba(200,200,220," +
+                            (Math.random() * 0.15 + 0.04) +
+                            ")";
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    for (var j = typed.length; j--; ) {
+                        var t = typed[j];
+                        var c = 0;
+                        for (var k = 0; k < typed.length; k++)
+                            if (typed[k].line === t.line && k < j) c++;
+                        var pos = slotPos(t.line, c);
+                        Object.assign(t.el.style, {
+                            left: pos.x + "px",
+                            top: pos.y + "px",
+                        });
+                    }
+                    updateLineNumbers();
+                });
+
+                updateStats();
+            })();
+        </script>
+    </body>
+</html>
