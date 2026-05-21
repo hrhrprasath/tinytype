@@ -10,7 +10,7 @@ Built as a single HTML file. Works on any device with a keyboard. Host it on Git
 
 ## Play
 
-https://your-username.github.io/tinytype
+https://hrhrprasath.github.io/tinytype
 
 ## How it works
 
