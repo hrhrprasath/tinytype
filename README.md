@@ -74,3 +74,7 @@ No build step. No configuration.
 ## License
 
 MIT
+
+---
+
+Powered by [OpenCode](https://opencode.ai) — free sponsor token.
