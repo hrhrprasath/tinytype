@@ -12,6 +12,8 @@ Built as a single HTML file. Works on any device with a keyboard. Host it on Git
 
 https://hrhrprasath.github.io/tinytype
 
+![tinytype screenshot](preview.png)
+
 ## How it works
 
 - **Letters & numbers** appear at center with a gentle pop animation, then float into a numbered line at the top.
