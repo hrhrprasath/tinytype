@@ -6,7 +6,7 @@
 
 A gentle, screen-friendly typing game for toddlers. Press any letter or number — it appears center-screen with a soft pop, then settles into a growing numbered line at the top. No ads, no tracking, no flashy distractions.
 
-Built as a single HTML file. Works on any device with a keyboard. Host it on GitHub Pages and share the link.
+Built as a single HTML file. Desktop only — requires a physical keyboard. Host it on GitHub Pages and share the link.
 
 ## Play
 
